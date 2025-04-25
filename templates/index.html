@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Password Strength Checker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Password Strength Checker</h1>
+        <input type="password" id="password" placeholder="Enter your password">
+        <button onclick="checkPassword()">Check</button>
+
+        <div id="result">
+            <div class="meter">
+                <div id="strengthBar"></div>
+            </div>
+            <p>Strength: <span id="strengthPercent">0%</span></p>
+            <ul id="feedback"></ul>
+        </div>
+    </div>
+
+    <script>
+        function checkPassword() {
+            const password = document.getElementById('password').value;
+            fetch('/check', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `password=${encodeURIComponent(password)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('strengthPercent').textContent = `${data.percentage}%`;
+                const bar = document.getElementById('strengthBar');
+                bar.style.width = `${data.percentage}%`;
+                bar.style.background = data.percentage < 50 ? '#e74c3c' :
+                                       data.percentage < 80 ? '#f1c40f' : '#2ecc71';
+
+                const feedbackList = document.getElementById('feedback');
+                feedbackList.innerHTML = "";
+                data.feedback.forEach(msg => {
+                    const li = document.createElement('li');
+                    li.textContent = msg;
+                    feedbackList.appendChild(li);
+                });
+            });
+        }
+    </script>
+</body>
+</html>
